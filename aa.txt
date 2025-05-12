@@ -1,0 +1,35 @@
+ // try {
+    //   if (!user) {
+    //     console.error('No user object available');
+    //     return;
+    //   }
+
+    //   const email = user.primaryEmailAddress?.emailAddress;
+    //   if (!email) {
+    //     throw new Error('No email available for the user');
+    //   }
+
+    //   // Derive userName with strict fallback
+    //   const user_name = user.username || user.fullName || email.split('@')[0] || 'New User';
+      
+    //   // Debugging: Log values to inspect
+    //   console.log('User data:', { email, user_name, user });
+
+    //   // Check if user exists
+    //   const existingUser = await db.select()
+    //     .from(users)
+    //     .where(eq(users.email, email));
+
+    //   if (existingUser.length === 0) {
+    //     await db.insert(users).values({
+    //       user_name: user_name, // Match schema column name
+    //       email: email,
+    //       is_member: false
+    //     });
+    //     console.log('New user created successfully:', { email, user_name });
+    //   } else {
+    //     console.log('User already exists:', email);
+    //   }
+    // } catch (error) {
+    //   console.error('Database operation failed:', error);
+    // } 
