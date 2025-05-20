@@ -31,7 +31,7 @@ function SideBar() {
     <div className="relative h-screen shadow-md p-5 flex flex-col bg-blue-100 mr-1">
       {/* Logo Section */}
       <div className="flex items-center gap-2">
-        <Image src="/jjj-removebg-preview.png" alt="logo" width={40} height={40} priority />
+        <Image src="/logo.svg" alt="logo" width={40} height={40} priority />
         <h2
           className="text-xl font-bold text-blue-600 transition-transform duration-300 hover:scale-110 hover:text-blue-800"
         >
@@ -41,9 +41,11 @@ function SideBar() {
 
       {/* Menu Section */}
       <div className="mt-10 flex-1">
+        <Link href={'/create'}>
         <button className="w-full h-10 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
           + Create New
         </button>
+        </Link>
         <div className="mt-5">
           {MenuList.map((menu, index) => (
             <Link href={menu.link} key={index}>

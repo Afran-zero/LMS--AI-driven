@@ -1,35 +1,21 @@
- // try {
-    //   if (!user) {
-    //     console.error('No user object available');
-    //     return;
-    //   }
 
-    //   const email = user.primaryEmailAddress?.emailAddress;
-    //   if (!email) {
-    //     throw new Error('No email available for the user');
-    //   }
+npx inngest-cli@latest dev
+npx drizzle-kit push
+ npx drizzle-kit studio
 
-    //   // Derive userName with strict fallback
-    //   const user_name = user.username || user.fullName || email.split('@')[0] || 'New User';
-      
-    //   // Debugging: Log values to inspect
-    //   console.log('User data:', { email, user_name, user });
+ //Generate a study material for <> for exam and level of difficulty will be easy with summary of course, list of 
+ Chapters along with summary for each chapter ,topic list in each chapter , all results in JSON format
 
-    //   // Check if user exists
-    //   const existingUser = await db.select()
-    //     .from(users)
-    //     .where(eq(users.email, email));
+ Generate a study material package for <SUBJECT> tailored for exam preparation. The difficulty level should be easy.
 
-    //   if (existingUser.length === 0) {
-    //     await db.insert(users).values({
-    //       user_name: user_name, // Match schema column name
-    //       email: email,
-    //       is_member: false
-    //     });
-    //     console.log('New user created successfully:', { email, user_name });
-    //   } else {
-    //     console.log('User already exists:', email);
-    //   }
-    // } catch (error) {
-    //   console.error('Database operation failed:', error);
-    // } 
+The output should include:
+
+    A summary of the entire course.
+
+    A list of chapters, each with:
+
+        A brief summary of the chapter
+
+        A list of topics covered within the chapter
+
+    All information should be structured in JSON format.
