@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 async function generateStudyMaterial(topic, courseType, difficultyLevel) {
   try {
@@ -7,13 +7,13 @@ async function generateStudyMaterial(topic, courseType, difficultyLevel) {
     
     // Get the generative model instance
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash", // Updated to current recommended model
+      model: "gemini-1.5-flash",
       generationConfig: {
         responseMimeType: "application/json"
       }
     });
 
-   const prompt = `You are an expert curriculum designer. Generate structured study material for the topic of "${topic}" for a ${courseType} course at a ${difficultyLevel} level. The study material should be organized as a JSON object with the following structure:
+    const prompt = `You are an expert curriculum designer. Generate structured study material for the topic of "${topic}" for a ${courseType} course at a ${difficultyLevel} level. The study material should be organized as a JSON object with the following structure:
     {
       "courseTitle": string,
       "difficulty": string,
@@ -27,7 +27,7 @@ async function generateStudyMaterial(topic, courseType, difficultyLevel) {
       ]
     }
     Return ONLY the JSON object, without any markdown formatting or additional text.`;
-    // Generate content using the correct method
+
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
@@ -42,4 +42,55 @@ async function generateStudyMaterial(topic, courseType, difficultyLevel) {
   }
 }
 
-module.exports = { generateStudyMaterial };
+export const generateNotesAiModel = async (chapterData) => {
+  // Validate input
+  if (!chapterData?.chapterTitle || !Array.isArray(chapterData?.topics)) {
+    throw new Error("Invalid chapter data structure");
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash", // Note: "gemini-2.0-flash" doesn't exist, corrected to 1.5
+      generationConfig: {
+        responseMimeType: "text/plain",
+        temperature: 0.3
+      }
+    });
+
+    const prompt = `As an expert educator, generate comprehensive study material in HTML format (without HTML/HEAD/BODY tags) for this chapter:
+    
+    ## Chapter: ${chapterData.chapterTitle}
+    ### Summary: ${chapterData.summary}
+    
+    ### Topics to Cover:
+    ${chapterData.topics.map(t => `- ${t}`).join('\n')}
+    
+    ### Requirements:
+    1. Create detailed content for each topic
+    2. Use semantic HTML (<section>, <h2>-<h4>, <ul>, <p>)
+    3. Include practical examples
+    4. Add key definitions in <strong> tags
+    5. Structure for optimal readability`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let htmlContent = response.text();
+
+    // Clean and validate the response
+    htmlContent = htmlContent.replace(/^```html|```$/g, '').trim();
+    if (!htmlContent.startsWith('<')) {
+      throw new Error("AI response is not valid HTML");
+    }
+
+    return htmlContent;
+  } catch (error) {
+    console.error('AI Generation Failed:', {
+      chapter: chapterData.chapterTitle,
+      error: error.message
+    });
+    throw new Error(`Failed to generate content for "${chapterData.chapterTitle}": ${error.message}`);
+  }
+};
+
+export { generateStudyMaterial };

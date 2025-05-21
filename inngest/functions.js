@@ -1,7 +1,10 @@
 import { inngest } from "@/inngest/client";
 import { db } from "@/configs/db";
-import { users } from "@/configs/schema";
+import { CHAPTER_NOTEs_TABLE, users ,STUDY_MATERIAL_TABLE } from "@/configs/schema";
 import { eq } from "drizzle-orm";
+import { generateNotesAiModel } from "@/configs/AiModel";
+
+
 
 
 
@@ -63,5 +66,61 @@ export const CreateNewUser = inngest.createFunction(
     });
 
     return { status: "success", data: result };
+  }
+);
+
+export const GenerateNotes = inngest.createFunction(
+  { id: "generate-course" },
+  { event: "notes.generate" },
+  async ({ event, step }) => {
+    const { course } = event.data;
+
+    const notesResult = await step.run("Generate Chapter Notes", async () => {
+      
+      if (!course || !course.courseLayout) {
+        throw new Error('Invalid course data or missing courseLayout');
+      }
+      const chapters = course?.courseLayout?.chapters || [];
+      
+      // Validate we have chapters to process
+      if (!chapters.length) {
+        throw new Error("No chapters found in course layout");
+      }
+
+      // Process chapters sequentially
+      for (let index = 0; index < chapters.length; index++) {
+        const chapter = chapters[index];
+        
+        try {
+          const htmlContent = await generateNotesAiModel({
+            chapterTitle: chapter.chapterTitle,
+            summary: chapter.summary,
+            topics: chapter.topics
+          });
+
+          await db.insert(CHAPTER_NOTEs_TABLE).values({
+            chapterId: index,
+            courseId: course.courseId,
+            notes: htmlContent
+          });
+        } catch (error) {
+          console.error(`Failed to generate notes for chapter ${index}:`, error);
+          throw error; // Fail the entire process if any chapter fails
+        }
+      }
+
+      return `Generated notes for ${chapters.length} chapters`;
+    });
+
+    const updateCourseStatusResult = await step.run("Update Course Status", async () => {
+      return await db.update(STUDY_MATERIAL_TABLE)
+        .set({ status: 'Ready' })
+        .where(eq(STUDY_MATERIAL_TABLE.id, course.courseId));
+    });
+
+    return {
+      notesGenerated: notesResult,
+      statusUpdated: updateCourseStatusResult
+    };
   }
 );
