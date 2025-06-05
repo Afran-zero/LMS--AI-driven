@@ -27,7 +27,7 @@ function Course() {
       
       <div>
       <CourseIntroCard course ={course}/>
-      <StudyMaterialSection courseId={courseId}/>
+      <StudyMaterialSection courseId={courseId} course={course}/>
       <ChapterList COURSE={course}/>
       </div>
     </div>

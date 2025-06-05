@@ -3,9 +3,9 @@ import MaterialCardItem from './MaterialCardItem';
 import axios from 'axios';
 import Link from 'next/link';
 
-function StudyMaterialSection({ courseId }) {
+function StudyMaterialSection({ courseId ,course}) {
   const [studyTypeContent,setStudyTypeContent] = React.useState([]);
-
+console.log('StudyMaterialSection course:', course);
 
   const MaterialList = [
     { 
@@ -69,6 +69,7 @@ function StudyMaterialSection({ courseId }) {
           <Link key={item.id} href={'/course/'+courseId+item.path}>
           <MaterialCardItem key={item.id} item={item} 
            studyTypeContent={studyTypeContent}
+           course={course}
           />
           </Link>
         ))}

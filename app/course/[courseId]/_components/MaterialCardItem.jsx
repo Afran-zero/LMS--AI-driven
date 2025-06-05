@@ -2,7 +2,37 @@ import { Button } from '@/components/ui/button'
 import React from 'react'
 import Image from 'next/image'
 
-function MaterialCardItem({ item, studyTypeContent }) {
+import axios from 'axios'
+import { RefreshCcw } from 'lucide-react'
+function MaterialCardItem({ item, studyTypeContent ,course }) {
+ const[loading,setLoading]=React.useState(false)
+
+
+const GenerateContent= async()=>{
+  setLoading(true)
+  //console.log(course)
+   let chapters = '';
+  course?.courseLayout?.chapters?.forEach((chapter) => {
+    if (chapter.chapterTitle) {
+      chapters = chapters ? `${chapters}, ${chapter.chapterTitle}` : chapter.chapterTitle;
+    }
+  });
+  console.log(chapters)
+  
+  
+   const result =await axios.post('/api/study-type-content', {
+    
+    courseId: course.courseId,
+     type: item.name,
+     chapters: chapters
+   })
+   setLoading(false);
+   console.log(result)
+ }
+
+
+
+
   return (
     <div className={`flex flex-col rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 p-4 border border-gray-200 ${studyTypeContent?.[item.type]?.length == null ? 'bg-gray-200' : 'bg-gray-50'}`}>
       <div className='flex justify-between items-start mb-3'>
@@ -32,8 +62,14 @@ function MaterialCardItem({ item, studyTypeContent }) {
         </div>
       </div>
       {studyTypeContent?.[item.type]?.length == null ? (
-        <Button className='mt-auto w-full rounded-md border border-red-300 hover:bg-red-400 transition-colors duration-200' variant={'outline'}>
-          Generate
+        <Button className='mt-auto w-full rounded-md border border-red-300 hover:bg-red-400 transition-colors duration-200' variant={'outline'}
+        onClick={() => 
+           GenerateContent()
+            // Handle generate button click
+          }
+        
+        >
+         {loading &&<RefreshCcw className='animate-spin'/>} Generate
         </Button>
       ) : (
         <Button className='mt-auto w-full rounded-md border border-gray-300 hover:bg-gray-100 transition-colors duration-200' variant={'outline'}>
