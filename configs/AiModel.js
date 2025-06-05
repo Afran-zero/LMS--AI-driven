@@ -1,18 +1,18 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// Initialize the Google Generative AI client
+const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+
+// Get the generative model instance
+const model = genAI.getGenerativeModel({ 
+  model: "gemini-1.5-flash",
+  generationConfig: {
+    responseMimeType: "application/json"
+  }
+});
+
 async function generateStudyMaterial(topic, courseType, difficultyLevel) {
   try {
-    // Initialize the Google Generative AI client
-    const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
-    
-    // Get the generative model instance
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        responseMimeType: "application/json"
-      }
-    });
-
     const prompt = `You are an expert curriculum designer. Generate structured study material for the topic of "${topic}" for a ${courseType} course at a ${difficultyLevel} level. The study material should be organized as a JSON object with the following structure:
     {
       "courseTitle": string,
@@ -21,6 +21,7 @@ async function generateStudyMaterial(topic, courseType, difficultyLevel) {
       "chapters": [
         {
           "chapterTitle": string,
+          "emoji": string,
           "summary": string,
           "topics": [string]
         }
@@ -49,15 +50,6 @@ export const generateNotesAiModel = async (chapterData) => {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash", // Note: "gemini-2.0-flash" doesn't exist, corrected to 1.5
-      generationConfig: {
-        responseMimeType: "text/plain",
-        temperature: 0.3
-      }
-    });
-
     const prompt = `As an expert educator, generate comprehensive study material in HTML format (without HTML/HEAD/BODY tags) for this chapter:
     
     ## Chapter: ${chapterData.chapterTitle}
@@ -90,6 +82,57 @@ export const generateNotesAiModel = async (chapterData) => {
       error: error.message
     });
     throw new Error(`Failed to generate content for "${chapterData.chapterTitle}": ${error.message}`);
+  }
+};
+
+export const GenerateStudyTypeContentAiModel = async (chapterTitles, studyType) => {
+  try {
+    const prompt = `Based on the study type, generate one of the following:
+        
+For flashcards:
+- Generate flashcards on the topics: [${chapterTitles.join(", ")}]
+- Each flashcard should include:
+  - 'front': a concise question, term, or concept
+  - 'back': a clear, informative answer or explanation
+- Generate a maximum of 15 flashcards
+- Output format: { "type": "flashcards", "content": [...] }
+
+For quizzes:
+- Generate a 20-question quiz on: [${chapterTitles.join(", ")}]
+- Each question should include:
+  - 'question': the question text
+  - 'options': array of 4 possible answers
+  - 'answer': index of correct option
+  - 'explanation': brief explanation
+- Mix question types (multiple choice, true/false)
+- Output format: { "type": "quiz", "content": [...] }
+
+For Q&A:
+- Generate comprehensive Q&A on: [${chapterTitles.join(", ")}]
+- Each item should include:
+  - 'question': detailed question
+  - 'answer': thorough explanation
+  - 'keyPoints': array of important points
+- Generate 10-15 Q&A pairs
+- Output format: { "type": "qa", "content": [...] }
+
+Return JSON with the appropriate structure based on the study type requested.`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    const cleanText = text.replace(/^```json|```$/g, '').trim();
+    const parsed = JSON.parse(cleanText);
+
+    // Validate the response structure
+    if (!parsed.type || !parsed.content || parsed.type !== studyType) {
+      throw new Error("Invalid AI response structure");
+    }
+
+    return parsed;
+  } catch (error) {
+    console.error('Study Type Generation Failed:', error);
+    throw new Error(`Failed to generate ${studyType} content: ${error.message}`);
   }
 };
 

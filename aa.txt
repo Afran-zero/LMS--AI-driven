@@ -19,3 +19,5 @@ The output should include:
         A list of topics covered within the chapter
 
     All information should be structured in JSON format.
+
+    genarate the flashcards on topic :[] in json format with front back content maximun 15

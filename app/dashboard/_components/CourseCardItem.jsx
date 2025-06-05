@@ -2,6 +2,7 @@ import React from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { RefreshCw } from 'lucide-react'
+import Link from 'next/link'
 
 function CourseCardItem({course}) {
   return (
@@ -46,10 +47,10 @@ function CourseCardItem({course}) {
             <RefreshCw className='h-4 w-4 animate-spin' />
             Generating...
           </div>
-        ) : (
+        ) : (<Link href={'/course/' + course?.courseId}>
           <Button className='px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white border border-blue-700'>
             View
-          </Button>
+          </Button></Link>
         )}
       </div>
     </div>

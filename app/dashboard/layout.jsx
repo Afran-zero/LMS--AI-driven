@@ -4,14 +4,19 @@ import DashboardHeader from './_components/DashboardHeader';
 
 function DashboardLayout({ children }) {
   return (
-    <div>
-      <div className="md:w-64 hidden md:block fixed">
-        <SideBar />
-      </div>
-      <div className="md:ml-64">
+    <div className="flex flex-col min-h-screen">
+      <div className="sticky top-0 z-50">
         <DashboardHeader />
-        <div className='p-10'
-       >{children}</div>
+      </div>
+      <div className="flex flex-1">
+        <div className="hidden md:block">
+          <SideBar />
+        </div>
+        <main className="flex-1 overflow-auto">
+          <div className="p-6 md:p-8">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

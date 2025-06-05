@@ -1,0 +1,1 @@
+ALTER TABLE "studyTypeContent" ADD CONSTRAINT "studyTypeContent_content_unique" UNIQUE("content");
