@@ -1,111 +1,61 @@
-
-import { NextResponse } from 'next/server';
-import { db } from '@/configs/db';
-import { CHAPTER_NOTEs_TABLE, STUDY_MATERIAL_TABLE } from '@/configs/schema';
-import { eq } from 'drizzle-orm';
+import { db } from "@/configs/db"
+import { NextResponse } from "next/server"
+import { eq, and } from "drizzle-orm"
+import { STUDY_MATERIAL_TABLE } from "@/configs/schema"
 
 export async function POST(req) {
-  try {
-    const { courseId: uuidCourseId, studyType } = await req.json();
-    console.log('API received:', { uuidCourseId, studyType });
-
-    // Map UUID courseId to STUDY_MATERIAL_TABLE.id and fetch courseLayout
-    const course = await db
-      .select({ id: STUDY_MATERIAL_TABLE.id, courseLayout: STUDY_MATERIAL_TABLE.courseLayout })
-      .from(STUDY_MATERIAL_TABLE)
-      .where(eq(STUDY_MATERIAL_TABLE.courseId, uuidCourseId));
-
-    if (course.length === 0) {
-      console.log(`No course found for courseId: ${uuidCourseId}`);
-      return NextResponse.json({
-        success: false,
-        message: `No course found for ID: ${uuidCourseId}`,
-        data: [],
-      });
-    }
-
-    const courseId = course[0].id; // e.g., 7
-    const courseLayout = course[0].courseLayout || {}; // e.g., { courseTitle, difficulty, summary, chapters: [...] }
-
-    if (studyType === 'ALL') {
-      const notes = await db
-        .select({
-          id: CHAPTER_NOTEs_TABLE.id,
-          chapterId: CHAPTER_NOTEs_TABLE.chapterId,
-          courseId: CHAPTER_NOTEs_TABLE.courseId,
-          notes: CHAPTER_NOTEs_TABLE.notes,
-        })
-        .from(CHAPTER_NOTEs_TABLE)
-        .where(eq(CHAPTER_NOTEs_TABLE.courseId, courseId.toString()));
-
-      console.log('Fetched notes for ALL:', notes);
-
-      const formattedNotes = notes.map((note, index) => {
-        // Extract chapterTitle using chapterId as index
-        let chapterTitle = `Note ${index + 1}`; // Default title
-        if (courseLayout.chapters && Array.isArray(courseLayout.chapters)) {
-          const chapterIndex = parseInt(note.chapterId, 10);
-          if (!isNaN(chapterIndex) && chapterIndex >= 0 && chapterIndex < courseLayout.chapters.length) {
-            chapterTitle = courseLayout.chapters[chapterIndex].chapterTitle || chapterTitle;
-          }
+    try {
+        const { courseId, studyType } = await req.json()
+        
+        console.log('API received:', { courseId, studyType });
+        
+        if (studyType === 'ALL') {
+            // Fetch all study materials for this course
+            const allMaterials = await db.select().from(STUDY_MATERIAL_TABLE).where(eq(STUDY_MATERIAL_TABLE.courseId, courseId));
+            
+            console.log('All materials from DB:', allMaterials);
+            
+            // Organize by type
+            const result = {
+                notes: [],
+                flashcard: null,
+                quiz: null,
+                qa: null
+            };
+            
+            allMaterials.forEach(material => {
+                switch (material.type) {
+                    case 'notes':
+                        result.notes.push(material);
+                        break;
+                    case 'flashcard':
+                        result.flashcard = material;
+                        break;
+                    case 'quiz':
+                        result.quiz = material;
+                        break;
+                    case 'qa':
+                        result.qa = material;
+                        break;
+                }
+            });
+            
+            console.log('Organized result:', result);
+            return NextResponse.json({ result });
         }
-
-        return {
-          id: note.id,
-          title: chapterTitle,
-          content: note.notes || 'No content available',
-          chapterId: note.chapterId,
-        };
-      });
-
-      const result = {
-        notes: formattedNotes,
-        flashcard: null,
-        quiz: null,
-        qa: null,
-      };
-
-      return NextResponse.json({ success: true, result });
-    } else if (studyType === 'notes') {
-      const notes = await db
-        .select({
-          id: CHAPTER_NOTEs_TABLE.id,
-          chapterId: CHAPTER_NOTEs_TABLE.chapterId,
-          courseId: CHAPTER_NOTEs_TABLE.courseId,
-          notes: CHAPTER_NOTEs_TABLE.notes,
-        })
-        .from(CHAPTER_NOTEs_TABLE)
-        .where(eq(CHAPTER_NOTEs_TABLE.courseId, courseId.toString()));
-
-      console.log('Fetched notes:', notes);
-
-      const formattedNotes = notes.map((note, index) => {
-        // Extract chapterTitle using chapterId as index
-        let chapterTitle = `Note ${index + 1}`; // Default title
-        if (courseLayout.chapters && Array.isArray(courseLayout.chapters)) {
-          const chapterIndex = parseInt(note.chapterId, 10);
-          if (!isNaN(chapterIndex) && chapterIndex >= 0 && chapterIndex < courseLayout.chapters.length) {
-            chapterTitle = courseLayout.chapters[chapterIndex].chapterTitle || chapterTitle;
-          }
-        }
-
-        return {
-          id: note.id,
-          title: chapterTitle,
-          content: note.notes || 'No content available',
-          chapterId: note.chapterId,
-        };
-      });
-
-      return NextResponse.json({
-        success: true,
-        data: formattedNotes,
-      });
+        
+        // Handle individual study type requests
+        const result = await db.select().from(STUDY_MATERIAL_TABLE).where(
+            and(
+                eq(STUDY_MATERIAL_TABLE.courseId, courseId),
+                eq(STUDY_MATERIAL_TABLE.type, studyType)
+            )
+        );
+        
+        return NextResponse.json({ result });
+        
+    } catch (error) {
+        console.error('Error in study-type API:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-
-    return NextResponse.json({ success: false, message: 'Invalid studyType' }, { status: 400 });
-  } catch (error) {
-    console.error('API error:', error);
-    return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
-  }
 }

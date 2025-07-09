@@ -66,12 +66,13 @@ console.log('StudyMaterialSection course:', course);
       
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mt-5'>
         {MaterialList.map((item) => (
-          <Link key={item.id} href={'/course/'+courseId+item.path}>
+          //<Link key={item.id} href={'/course/'+courseId+item.path}>
           <MaterialCardItem key={item.id} item={item} 
            studyTypeContent={studyTypeContent}
            course={course}
+           refreshData={GetStudyMaterial}
           />
-          </Link>
+          //</Link>
         ))}
       </div>
     </div>

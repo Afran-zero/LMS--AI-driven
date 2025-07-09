@@ -107,7 +107,7 @@ export const GenerateStudyTypeContentAiModel = model.startChat({
     topP: 0.8,
     topK: 40,
     responseMimeType: 'application/json',
-    model: 'gemini-1.5-flash',
+   
   },
   history: [
     {
