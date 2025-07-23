@@ -77,7 +77,7 @@ function CourseCardItem({ course }) {
               Generating...
             </div>
           ) : (
-            <Link href={courseRoute} passHref legacyBehavior>
+            <Link href={courseRoute}>
               <Button 
                 className='px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white border border-blue-700'
                 disabled={status !== 'Ready'}

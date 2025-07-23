@@ -132,19 +132,68 @@ export const GenerateStudyTypeContent = inngest.createFunction(
     const { studyType, prompt, courseId, recordId } = event.data;
 
     const aiResult = await step.run(`Generate ${studyType} AI`, async () => {
-      // Use the provided prompt or fallback to a default prompt based on studyType
       const aiPrompt = prompt || `Generate ${studyType} content on the topics: ${chapters}.`;
-      const result = await GenerateStudyTypeContentAiModel.sendMessage(aiPrompt);
-      return JSON.parse(result.response.text());
+      try {
+        const result = await GenerateStudyTypeContentAiModel.sendMessage(aiPrompt);
+        const rawResponse = result.response.text();
+        console.log(`Raw AI response for ${studyType}:`, rawResponse);
+        const parsedResult = JSON.parse(rawResponse);
+        if (!Array.isArray(parsedResult)) {
+          throw new Error(`AI returned invalid format for ${studyType}: expected an array`);
+        }
+        // Validate structure based on studyType
+        if (studyType === 'quiz') {
+          parsedResult.forEach(item => {
+            if (!item.question || !Array.isArray(item.options) || item.correctAnswer === undefined) {
+              throw new Error(`Invalid quiz item format: ${JSON.stringify(item)}`);
+            }
+          });
+        } else if (studyType === 'qa') {
+          parsedResult.forEach(item => {
+            if (!item.question || !item.answer) {
+              throw new Error(`Invalid QA item format: ${JSON.stringify(item)}`);
+            }
+          });
+        }
+        return parsedResult;
+      } catch (error) {
+        console.error(`AI generation failed for ${studyType}:`, error);
+        throw new Error(`Failed to generate ${studyType} content: ${error.message}`);
+      }
     });
 
     const dbResult = await step.run("Save result to database", async () => {
-      await db.update(STUDY_TYPE_CONTENT_TABLE).set({
-        content: aiResult,
-        status: 'Ready',
-        type: studyType, // Ensure the studyType is saved
-      }).where(eq(STUDY_TYPE_CONTENT_TABLE.id, recordId));
-      return `Data inserted for ${studyType}`;
+      try {
+        // Check if record exists
+        const existingRecord = await db
+          .select()
+          .from(STUDY_TYPE_CONTENT_TABLE)
+          .where(eq(STUDY_TYPE_CONTENT_TABLE.id, recordId));
+
+        if (existingRecord.length === 0) {
+          await db.insert(STUDY_TYPE_CONTENT_TABLE).values({
+            id: recordId,
+            courseId: courseId,
+            type: studyType,
+            content: aiResult,
+            status: 'Ready',
+          });
+          return `Inserted new ${studyType} content for recordId: ${recordId}`;
+        } else {
+          await db
+            .update(STUDY_TYPE_CONTENT_TABLE)
+            .set({
+              content: aiResult,
+              status: 'Ready',
+              type: studyType,
+            })
+            .where(eq(STUDY_TYPE_CONTENT_TABLE.id, recordId));
+          return `Updated ${studyType} content for recordId: ${recordId}`;
+        }
+      } catch (error) {
+        console.error(`Database operation failed for ${studyType}:`, error);
+        throw error;
+      }
     });
 
     return {
