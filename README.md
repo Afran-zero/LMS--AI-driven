@@ -1,36 +1,160 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<h1 align="center">📚 Lernen — AI-Powered LMS Content Generator</h1>
 
-## Getting Started
+<p align="center">
+  <i>An intelligent platform that helps you generate educational content effortlessly from just a topic.</i>
+</p>
 
-First, run the development server:
+<p align="center">
+  <img src="https://img.shields.io/github/languages/top/Afran-zero/LMS--AI-driven?color=blue" />
+  <img src="https://img.shields.io/github/license/Afran-zero/LMS--AI-driven" />
+  <img src="https://img.shields.io/github/last-commit/Afran-zero/LMS--AI-driven" />
+</p>
+
+---
+
+## 🚀 Overview
+
+**Lernen** is an AI-driven Learning Management System (LMS) content generator that streamlines the process of creating learning materials. Just enter a topic, and Lernen will automatically generate:
+
+- 📖 Chapter breakdowns  
+- 📋 Course outlines  
+- 🧠 Flashcards  
+- ❓ Quizzes  
+- 💬 Q&A pairs  
+
+Perfect for educators, content creators, and e-learning platforms.
+
+---
+
+## ✨ Key Features
+
+- ✅ **Topic-to-Course AI Generation** using Generative AI (Gemini)
+- ✅ **Full-stack Web App** built with modern technologies
+- ✅ **Interactive UI** using Radix UI & TailwindCSS
+- ✅ **Authentication** via Clerk
+- ✅ **Flashcard Flip Animation**
+- ✅ **Quiz and Q&A Generator**
+- ✅ **Progress UI, Toasts & Notifications**
+
+---
+
+## 🧠 Powered By
+
+| Technology | Purpose |
+|-----------|---------|
+| **Next.js 15** | React-based frontend framework |
+| **Clerk** | User authentication |
+| **Tailwind CSS v4** | Utility-first UI design |
+| **Google Generative AI** | Content generation |
+| **Drizzle ORM + Neon** | Scalable Postgres-based serverless DB |
+| **Framer Motion** | Smooth UI animations |
+| **Embla Carousel** | Sliding cards/flashcards |
+| **Inngest** | Background jobs / serverless workflows |
+| **Lucide Icons** | Clean UI icons |
+
+---
+
+## 🖼️ UI Preview
+
+<!-- Replace with real image or GIF -->
+<p align="center">
+  <img src="https://github.com/Afran-zero/LMS--AI-driven/assets/demo-preview.gif" alt="Lernen preview" width="600"/>
+</p>
+
+---
+
+## 🛠️ Getting Started
+
+### 1. Clone the Repo
+
+```bash
+git clone https://github.com/Afran-zero/LMS--AI-driven.git
+cd LMS--AI-driven
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Setup Environment Variables
+
+Create a `.env.local` file and add the following:
+
+```env
+CLERK_PUBLISHABLE_KEY=your_clerk_key
+CLERK_SECRET_KEY=your_clerk_secret
+GOOGLE_API_KEY=your_gemini_api_key
+DATABASE_URL=your_neon_postgres_url
+```
+
+### 4. Run the Dev Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Now visit `http://localhost:3000` to explore Lernen!
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📂 Project Structure
 
-## Learn More
+```
+/app
+  /(auth)
+  /dashboard
+  /components
+  /lib
+  /utils
+  /api
+.env.local
+tailwind.config.js
+next.config.js
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧩 Sample Use Case
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. User logs in with Clerk
+2. Enters a topic: **"Introduction to Machine Learning"**
+3. Lernen generates:
 
-## Deploy on Vercel
+   * A full course outline  
+   * Chapters with summaries  
+   * Interactive flashcards  
+   * Multiple-choice quizzes  
+   * Q&A for understanding  
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📌 Todo / Future Improvements
+
+* [ ] Add PDF Export
+* [ ] Enable Content Sharing
+* [ ] Teacher & Admin Roles
+* [ ] LMS Plugin Integration
+* [ ] Bangla Content Support 🇧🇩
+
+---
+
+## 🙋‍♂️ Author
+
+**Md Kaif Afran Khan**  
+Undergrad CSE Student, North South University  
+📫 [kaif.khan@northsouth.edu](mailto:kaif.khan@northsouth.edu)  
+🌐 [GitHub](https://github.com/Afran-zero)
+
+---
+
+## 📝 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+> The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.  
+>  
+> Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
