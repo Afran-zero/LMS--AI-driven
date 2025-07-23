@@ -44,7 +44,7 @@ export async function POST(req) {
     // Since STUDY_TYPE_CONTENT_TABLE.courseId is varchar, convert to string
     const courseIdString = courseId.toString();
     
-    console.log('Mapped courseId:', courseId, 'as string:', courseIdString);
+    console.log('Mapped courseId:', courseId, 'as string:',(courseIdString))
 
     if (studyType === 'ALL') {
       // Fetch notes
@@ -78,11 +78,11 @@ export async function POST(req) {
         };
       });
 
-      // Fetch content list (courseId is varchar in schema, so use string)
+      // Fetch content list (use uuidCourseId for STUDY_TYPE_CONTENT_TABLE)
       const contentList = await db
         .select()
         .from(STUDY_TYPE_CONTENT_TABLE)
-        .where(eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseIdString));
+        .where(eq(STUDY_TYPE_CONTENT_TABLE.courseId, uuidCourseId));
 
       console.log('Content list:', contentList);
 
@@ -136,21 +136,42 @@ export async function POST(req) {
       
     } else {
       // Handle other study types (flashcard, quiz, qa)
-      const notes = await db
-        .select()
+      const content = await db
+        .select({
+          id: STUDY_TYPE_CONTENT_TABLE.id,
+          courseId: STUDY_TYPE_CONTENT_TABLE.courseId,
+          type: STUDY_TYPE_CONTENT_TABLE.type,
+          content: STUDY_TYPE_CONTENT_TABLE.content,
+          status: STUDY_TYPE_CONTENT_TABLE.status,
+        })
         .from(STUDY_TYPE_CONTENT_TABLE)
         .where(
           and(
-            eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseIdString),
+            eq(STUDY_TYPE_CONTENT_TABLE.courseId, uuidCourseId),
             eq(STUDY_TYPE_CONTENT_TABLE.type, studyType)
           )
         );
 
-      console.log(`Fetched ${studyType} content:`, notes);
+      console.log(`Fetched ${studyType} content:`, content);
+
+      if (content.length === 0) {
+        console.log(`No ${studyType} content found for courseId: ${uuidCourseId}`);
+        return NextResponse.json({
+          success: false,
+          message: `No ${studyType} content found for course ID: ${uuidCourseId}`,
+          data: [],
+        });
+      }
 
       return NextResponse.json({
         success: true,
-        data: notes[0] || null,
+        data: {
+          id: content[0].id,
+          courseId: content[0].courseId,
+          type: content[0].type,
+          content: content[0].content || [], // Ensure content is an array
+          status: content[0].status,
+        },
       });
     }
 

@@ -125,25 +125,34 @@ export const GenerateNotes = inngest.createFunction(
   }
 );
 
-// use to generate FlashCard , quiz and qna
 export const GenerateStudyTypeContent = inngest.createFunction(
- { id: "Generate Study Type Content" },
+  { id: "Generate Study Type Content" },
   { event: "studyType.content" },
   async ({ event, step }) => {
-    const { studyType ,prompt,courseId ,recordId} = event.data;
-    const FlashcardAiResult = await step.run("Generate Flashcard AI", async () => {
-      const result = await GenerateStudyTypeContentAiModel.sendMessage(prompt);
-      const AIResult =JSON.parse(result.response.text());
-      return AIResult;
-    }); 
-    const DbResult=await step.run("save result to into DB", async () => {
-      const result = await db.update(STUDY_TYPE_CONTENT_TABLE).set({
-       
-        content: FlashcardAiResult,
-        status: 'Ready'
-      }).where(eq(STUDY_TYPE_CONTENT_TABLE.id,recordId))
-      
-      return 'data inserted' ;
+    const { studyType, prompt, courseId, recordId } = event.data;
+
+    const aiResult = await step.run(`Generate ${studyType} AI`, async () => {
+      // Use the provided prompt or fallback to a default prompt based on studyType
+      const aiPrompt = prompt || `Generate ${studyType} content on the topics: ${chapters}.`;
+      const result = await GenerateStudyTypeContentAiModel.sendMessage(aiPrompt);
+      return JSON.parse(result.response.text());
     });
-  
-  })
+
+    const dbResult = await step.run("Save result to database", async () => {
+      await db.update(STUDY_TYPE_CONTENT_TABLE).set({
+        content: aiResult,
+        status: 'Ready',
+        type: studyType, // Ensure the studyType is saved
+      }).where(eq(STUDY_TYPE_CONTENT_TABLE.id, recordId));
+      return `Data inserted for ${studyType}`;
+    });
+
+    return {
+      studyType,
+      courseId,
+      recordId,
+      aiResult,
+      dbResult,
+    };
+  }
+);

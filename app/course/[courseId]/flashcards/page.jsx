@@ -16,7 +16,7 @@ import { Loader2, Brain, Zap } from "lucide-react"
 
 function Flashcards() {
   const { courseId } = useParams()
-  const [flashcards, setFlashcards] = useState([])
+  const [flashcards, setFlashcards] = useState({ data: { content: [] } }) // Initialize with empty content
   const [isFlipped, setIsFlipped] = useState(false)
   const [api, setApi] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -43,7 +43,7 @@ function Flashcards() {
       setLoading(true)
       const result = await axios.post('/api/study-type', {
         courseId: courseId,
-        studyType: 'Flashcard'
+        studyType: 'flashcard' // Use lowercase to match database
       })
       setFlashcards(result.data)
       console.log('Flashcards', result.data)
@@ -59,7 +59,7 @@ function Flashcards() {
     setIsFlipped(!isFlipped)
   }
 
-  const progress = flashcards.content?.length > 0 ? ((currentIndex + 1) / flashcards.content.length) * 100 : 0
+  const progress = flashcards.data?.content?.length > 0 ? ((currentIndex + 1) / flashcards.data.content.length) * 100 : 0
 
   if (loading) {
     return (
@@ -104,11 +104,11 @@ function Flashcards() {
         </div>
 
         {/* Progress Bar */}
-        {flashcards.content?.length > 0 && (
+        {flashcards.data?.content?.length > 0 && (
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-700">
-                Card {currentIndex + 1} of {flashcards.content.length}
+                Card {currentIndex + 1} of {flashcards.data.content.length}
               </span>
               <span className="text-sm font-medium text-gray-700">
                 {Math.round(progress)}% Complete
@@ -123,10 +123,10 @@ function Flashcards() {
 
         {/* Flashcard Carousel */}
         <div className="flex justify-center items-center min-h-[500px]">
-          {flashcards.content?.length > 0 ? (
+          {flashcards.data?.content?.length > 0 ? (
             <Carousel setApi={setApi} className="w-full max-w-2xl">
               <CarouselContent>
-                {flashcards.content.map((flashcard, index) => (
+                {flashcards.data.content.map((flashcard, index) => (
                   <CarouselItem key={index} className="flex justify-center">
                     <FlashcardItem 
                       handleClick={handleClick}

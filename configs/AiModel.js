@@ -114,10 +114,27 @@ export const GenerateStudyTypeContentAiModel = model.startChat({
       role: 'user',
       parts: [
         {
-          text: `Generate flashcards on the topics: ${chapters}. Each flashcard should include: - front: a concise question, term, or concept - back: a clear, informative answer or explanation Generate a maximum of 15 flashcards. Output the result as a JSON array with objects containing front and back fields only.`,
+          text: `Generate content based on the study type and topics provided. For each study type, follow the specific format:
+
+- **Flashcard**: Generate a maximum of 15 flashcards on the topics: ${chapters}. Each flashcard should include:
+  - front: a concise question, term, or concept
+  - back: a clear, informative answer or explanation
+  Output as a JSON array with objects containing front and back fields only.
+
+- **Quiz**: Generate a maximum of 10 quiz questions on the topics: ${chapters}. Each quiz question should include:
+  - question: a clear, concise question
+  - options: an array of 4 possible answers
+  - correctAnswer: the index (0-3) of the correct answer
+  Output as a JSON array with objects containing question, options, and correctAnswer fields.
+
+- **QA**: Generate a maximum of 10 question-and-answer pairs on the topics: ${chapters}. Each pair should include:
+  - question: a detailed, open-ended question
+  - answer: a comprehensive, informative answer
+  Output as a JSON array with objects containing question and answer fields.
+
+Return the result as a JSON array based on the study type provided.`,
         },
       ],
     },
-    // ... rest of the history
   ],
 });
